@@ -1,57 +1,90 @@
 package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball;
 
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.screens.MainMenuScreen;
+import static java.awt.Color.WHITE;
+import static ru.innovationcampus.vsu26.igrekon.super_ball.GameResources.FONT_PATH;
+import static ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.POSITION_ITERATIONS;
+import static ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.STEP_TIME;
+import static ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.VELOCITY_ITERATIONS;
 
-// ИСПРАВЛЕНО: Наследуемся от Game, чтобы работал метод setScreen
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Box2D;
+import com.badlogic.gdx.physics.box2d.World;
+
+import ru.innovationcampus.vsu26.igrekon.super_ball.components.MovingBackgroundView;
+import ru.innovationcampus.vsu26.igrekon.super_ball.managers.AudioManager;
+import ru.innovationcampus.vsu26.igrekon.super_ball.screens.GameScreen;
+import ru.innovationcampus.vsu26.igrekon.super_ball.screens.MenuScreen;
+import ru.innovationcampus.vsu26.igrekon.super_ball.screens.SettingsScreen;
+
 public class MyGdxGame extends Game {
+	public World world;
+
+	public BitmapFont largeWhiteFont;
+	public BitmapFont commonWhiteFont;
+	public BitmapFont commonBlackFont;
+
+	public Vector3 touch;
 	public SpriteBatch batch;
-	public AssetManager assets;
-	public int score = 0;
+	public OrthographicCamera camera;
+	public AudioManager audioManager;
+	public MovingBackgroundView movingBackgroundView;
+
+
+
+
+
+	public GameScreen gameScreen;
+	public MenuScreen menuScreen;
+	public SettingsScreen settingsScreen;
+	public int score;
+
+	float accumulator = 0;
+
 
 	@Override
 	public void create() {
+
+		Box2D.init();
+		world = new World(new Vector2(0, 0), true);
+
+		largeWhiteFont = FontBuilder.generate(48, Color.WHITE, FONT_PATH);
+		commonWhiteFont = FontBuilder.generate(24, Color.WHITE, FONT_PATH);
+		commonBlackFont = FontBuilder.generate(24, Color.BLACK, FONT_PATH);
+
 		batch = new SpriteBatch();
-		assets = new AssetManager();
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
+		audioManager = new AudioManager();
 
-		// --- ЗАГРУЗКА РЕСУРСОВ ---
+		gameScreen = new GameScreen(this);
+		menuScreen = new MenuScreen(this);
+		settingsScreen = new SettingsScreen(this);
+		commonWhiteFont = FontBuilder.generate(24, Color.WHITE, GameResources.FONT_PATH);
 
-		assets.load("textures/background.png", Texture.class);
-		assets.load("textures/clone.png", Texture.class);
-		assets.load("textures/stone.png", Texture.class);
-		assets.load("textures/start.png", Texture.class);
-		assets.load("textures/exit.png", Texture.class);
 
-//		assets.load("audio/flap.mp3", Sound.class);
-//		assets.load("audio/death.mp3", Sound.class);
-//		assets.load("audio/basic.mp3", Music.class);
-
-		assets.finishLoading(); // Ждем полной загрузки файлов в память
-
-		// ИСПРАВЛЕНО: Музыка инициализируется строго внутри метода create после загрузки
-//		Music music = assets.get("music/basic.mp3", Music.class);
-//		music.setLooping(true);
-//		music.setVolume(0.5f);
-//		music.play();
-
-		// ИСПРАВЛЕНО: Открываем главное меню внутри метода create
-		setScreen(new MainMenuScreen(this));
-	}
-
-	@Override
-	public void render() {
-		// Метод суперкласса Game автоматически отрисовывает текущий активный экран
-		super.render();
+		setScreen(menuScreen);
 	}
 
 	@Override
 	public void dispose() {
 		batch.dispose();
-		assets.dispose();
+	}
+
+	public void stepWorld() {
+		float delta = Gdx.graphics.getDeltaTime();
+		accumulator += Math.min(delta, 0.25f);
+
+		if (accumulator >= STEP_TIME) {
+			accumulator -= STEP_TIME;
+			world.step(STEP_TIME, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+		}
 	}
 }

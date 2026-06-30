@@ -1,174 +1,272 @@
 package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.screens;
 
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.ScreenUtils;
 
-import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.MyGdxGame;
-import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.objects.ClonePlayer;
-import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.objects.Obstacle;
+import java.util.ArrayList;
+
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.FontBuilder;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameResources;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSession;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSettings;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameState;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.MyGdxGame;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.components.ButtonView;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.components.ImageView;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.components.LiveView;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.components.MovingBackgroundView;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.components.RecordListView;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.components.TextView;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.managers.ContactManager;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.managers.MemoryManager;
+import ru.innovationcampus.vsu26.igrekon.space_cleaner.objects.Ball;
 
 public class GameScreen extends ScreenAdapter {
-    private final MyGdxGame game;
-    private World world;
-    private OrthographicCamera camera;
-    private Texture background;
-    private boolean nextIsTop = false; // Первая колонна будет снизу
+
+    MyGdxGame myGdxGame;
+    GameSession gameSession;
+
+    Ball shipObject;
+    ContactManager contactManager;
+    ImageView topBlackoutView;
+    TextView scoreTextView;
+
+    TextView recordsTextView;
+
+    TextView pauseTextView;
+
+    ButtonView pauseButton;
+    ButtonView homeButton;
+    ButtonView homeButton2;
+    ImageView fullBlackoutView;
+    ButtonView continueButton;
+    RecordListView recordsListView;
+
+    LiveView liveView;
+
+    MovingBackgroundView backgroundView;
+    BitmapFont commonWhiteFont;
 
 
-    private Array<ClonePlayer> players = new Array<>();
-    private Array<Obstacle> obstacles = new Array<>();
-
-    private float cameraSpeed = 1.5f;
-    private boolean isGameOver = false;
-
-    public GameScreen(MyGdxGame game) {
-        this.game = game;
-
-        this.background = game.assets.get("textures/background.png", Texture.class);
-        this.world = new World(new Vector2(0, -9.8f), true);
-
-        BodyDef groundDef = new BodyDef();
-        groundDef.type = BodyDef.BodyType.StaticBody;
-        groundDef.position.set(0, 0.5f);
-
-        Body groundBody = world.createBody(groundDef);
-        PolygonShape groundShape = new PolygonShape();
-        groundShape.setAsBox(1000f, 0.1f);
-        groundBody.createFixture(groundShape, 0.0f);
-        groundShape.dispose();
-
-        BodyDef ceilingDef = new BodyDef();
-        ceilingDef.type = BodyDef.BodyType.StaticBody;
-        ceilingDef.position.set(0, 7.2f); // Высота 7.2 метра (720 пикселей / 100)
-
-        Body ceilingBody = world.createBody(ceilingDef);
-        PolygonShape ceilingShape = new PolygonShape();
-        ceilingShape.setAsBox(1000f, 0.1f);
-        ceilingBody.createFixture(ceilingShape, 0.0f);
-        ceilingShape.dispose();
 
 
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        players.add(new ClonePlayer(world, 2.0f, 4.0f, game));
 
 
-        createCollisionListener();
+
+    ArrayList<Ball> trashArray;
+
+    private float garbageSpawnTimer = 0;
+//    private final float SPAWN_INTERVAL = 3.0f;
+
+    private final short GARBAGE_BIT = 4;
+
+
+    public GameScreen(MyGdxGame myGdxGame) {
+        this.myGdxGame = myGdxGame;
+        gameSession = new GameSession();
+        liveView = new LiveView(305,1215);
+        pauseButton = new ButtonView(605, 1200, 46, 54, GameResources.PAUSE_IMG_PATH);
+        commonWhiteFont = FontBuilder.generate(24, Color.WHITE, GameResources.FONT_PATH);
+        scoreTextView = new TextView(myGdxGame.commonWhiteFont, 50, 1215);
+        fullBlackoutView =new ImageView(0,160,GameResources.BLACKOUT_FULL_IMG_PATH);
+        continueButton = new ButtonView(605,1200,46,24,GameResources.BUTTON_SHORT_BG_IMG_PATH);
+        homeButton = new ButtonView(300,55,45,64,GameResources.BUTTON_SHORT_BG_IMG_PATH);
+        pauseTextView = new TextView(myGdxGame.commonWhiteFont,40,1000);
+
+
+
+        trashArray = new ArrayList<>();
+        contactManager = new ContactManager(myGdxGame.world);
+        backgroundView = new MovingBackgroundView(GameResources.BACKGROUND_IMG_PATH);
+
+        topBlackoutView = new ImageView(0,1180,GameResources.BLACKOUT_TOP_IMG_PATH);
+
+        shipObject = new Ball(
+                GameSettings.SCREEN_WIDTH / 2, 150,
+                GameSettings.BALL_WIDTH, GameSettings.BALL_HEIGHT,
+                GameResources.SHIP_IMG_PATH,
+                myGdxGame.world
+        );
+        recordsListView = new RecordListView(myGdxGame.commonWhiteFont, 690);
+        recordsTextView = new TextView(myGdxGame.largeWhiteFont, 206, 842, "Last records");
+        homeButton2 = new ButtonView(
+                280, 365,
+                160, 70,
+                myGdxGame.commonBlackFont,
+                GameResources.BUTTON_SHORT_BG_IMG_PATH,
+                "Home"
+        );
+
+    }
+
+    @Override
+    public void show() {
+          gameSession.startGame();
+          restartGame();
     }
 
     @Override
     public void render(float delta) {
-        float cameraXBox2D = camera.position.x / 100f;
 
-        if (obstacles.size == 0 || obstacles.peek().getX() - cameraXBox2D < 12f) {
-            float nextX = 8.0f;
-            if (obstacles.size > 0) {
-                nextX = obstacles.peek().getX() + 6.0f;
+        handleInput();
+        if (gameSession.state == GameState.PLAYING) {
+            if (gameSession.shouldSpawnTrash()) {
+                Ball ball = new Ball(
+                        GameSettings.BALL_WIDTH, GameSettings.BALL_HEIGHT;
+                )
+                trashArray.add(ball);
             }
 
-            obstacles.add(new Obstacle(world, nextX, nextIsTop, game));
-            nextIsTop= !nextIsTop;
-        }
-        if (isGameOver) {
-            game.setScreen(new MainMenuScreen(game));
-            return;
-        }
+            gameSession.updateScore();
+            scoreTextView.setText("Score: " + gameSession.getScore());
 
-        for (int i = obstacles.size - 1; i >= 0; i--) {
-            Obstacle obs = obstacles.get(i);
-            if (cameraXBox2D - obs.getX() > 8f) {
-                obstacles.removeIndex(i);
+
+
+
+
+
+
+//            if (shipObject.needToShoot()) {
+//                BulletObject laserBullet = new BulletObject(
+//                        shipObject.getX(), shipObject.getY() + shipObject.height / 2,
+//                        GameSettings.BULLET_WIDTH, GameSettings.BULLET_HEIGHT,
+////                        GameResources.BULLET_IMG_PATH,
+////                        myGdxGame.world
+//                );
+//                bulletArray.add(laserBullet);
+//                if (myGdxGame.audioManager.isSoundOn)
+//                    myGdxGame.audioManager.shootSound.play();
+//
+//
+//            }
+            if (!shipObject.isAlive()) {
+                gameSession.endGame();
+                System.out.println("Game over!");
+                recordsListView.setRecords(MemoryManager.loadRecordsTable());
             }
+            updateTrash();
+
+            updateBullets();
+            backgroundView.move();
+            scoreTextView.setText("Score:" + 100);
+            liveView.setLeftLives(shipObject.getLiveLeft());
+
+            myGdxGame.stepWorld();
+
+            draw();
+
         }
-
-
-        if (Gdx.input.justTouched()) {
-            for (ClonePlayer p: players) {
-                if (p != null && p.getBody() != null && p.isAlive()) {
-                    p.flyUp();
-                }
-            }
-        }
-
-        world.step(1 / 60f, 6, 2);
-
-        camera.position.x += cameraSpeed * delta * 100;
-        camera.update();
-
-        for (ClonePlayer p : players) {
-            if (p.getBody() != null) {
-                p.getBody().setLinearVelocity(cameraSpeed, p.getBody().getLinearVelocity().y);
-            }
-        }
-
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        for (Obstacle obs : obstacles) {
-            obs.update(delta);
-        }
-
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
-
-
-        game.batch.draw(background, camera.position.x - camera.viewportWidth / 2, 0, camera.viewportWidth, camera.viewportHeight);
-
-
-        for (Obstacle obs : obstacles) {
-            obs.draw(game.batch);
-        }
-
-
-        for (ClonePlayer p : players) {
-            p.draw(game.batch);
-        }
-
-        game.batch.end();
     }
 
-    private void createCollisionListener() {
-        world.setContactListener(new ContactListener() {
-            @Override
-            public void beginContact(Contact contact) {
-                Fixture fixtureA = contact.getFixtureA();
-                Fixture fixtureB = contact.getFixtureB();
+    private void restartGame() {
 
-                if (fixtureA.getBody() == null || fixtureB.getBody() == null) return;
+        for (int i = 0; i < trashArray.size(); i++) {
+            myGdxGame.world.destroyBody(trashArray.get(i).body);
+            trashArray.remove(i--);
+        }
 
-                if ("SAW".equals(fixtureA.getBody().getUserData()) || "SAW".equals(fixtureB.getBody().getUserData())) {
-                    for (ClonePlayer p : players) {
-                        if (p != null) p.setAlive(false);
+        if (shipObject != null) {
+            myGdxGame.world.destroyBody(shipObject.body);
+        }
+
+        shipObject = new Ball(
+                GameSettings.SCREEN_WIDTH / 2, 150,
+                GameSettings.BALL_WIDTH, GameSettings.BALL_HEIGHT,
+                GameResources.SHIP_IMG_PATH,
+                myGdxGame.world
+        );
+
+        gameSession.startGame();
+    }
+
+    private void handleInput() {
+        if (Gdx.input.isTouched()) {
+            myGdxGame.touch = myGdxGame.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+            shipObject.move(myGdxGame.touch);
+            switch (gameSession.state){
+                case PLAYING:
+                    if (pauseButton.isHit(myGdxGame.touch.x, myGdxGame.touch.y)) {
+                        gameSession.pauseGame();
                     }
-                    isGameOver = true;
-                }
+                    shipObject.move(myGdxGame.touch);
+                    break;
+
+                case PAUSED:
+                    if (continueButton.isHit(myGdxGame.touch.x, myGdxGame.touch.y)) {
+                        gameSession.resumeGame();
+                    }
+                    if (homeButton.isHit(myGdxGame.touch.x, myGdxGame.touch.y)) {
+                        System.out.println("end of game");
+                    }
+                    break;
+                case ENDED:
+                    if (homeButton2.isHit(myGdxGame.touch.x, myGdxGame.touch.y)) {
+                        myGdxGame.setScreen(myGdxGame.menuScreen);
+                    }
+                    break;
+
             }
-            @Override public void endContact(Contact contact) {}
-            @Override public void preSolve(Contact contact, Manifold oldManifold) {}
-            @Override public void postSolve(Contact contact, ContactImpulse impulse) {}
-        });
-    }
-
-    @Override
-    public void hide() {
-        dispose();
-    }
-
-    @Override
-    public void dispose() {
-        if (world != null) {
-            world.dispose();
-            world = null;
-            players.clear();
-            obstacles.clear();
         }
     }
+
+
+    private void draw() {
+
+        myGdxGame.camera.update();
+        myGdxGame.batch.setProjectionMatrix(myGdxGame.camera.combined);
+        ScreenUtils.clear(Color.CLEAR);
+
+
+        myGdxGame.batch.begin();
+        backgroundView.draw(myGdxGame.batch);
+//        for (TrashObjecta trash : trashArray) trash.draw(myGdxGame.batch);
+//        shipObject.draw(myGdxGame.batch);
+//        for (BulletObject bulletObject: bulletArray) bulletObject.draw(myGdxGame.batch);
+        topBlackoutView.draw(myGdxGame.batch);
+        scoreTextView.draw(myGdxGame.batch);
+        liveView.draw(myGdxGame.batch);
+        pauseButton.draw(myGdxGame.batch);
+        if (gameSession.state == GameState.PAUSED) {
+            fullBlackoutView.draw(myGdxGame.batch);
+            pauseTextView.draw(myGdxGame.batch);
+            homeButton.draw(myGdxGame.batch);
+            continueButton.draw(myGdxGame.batch);
+        } else if (gameSession.state == GameState.ENDED) {
+            fullBlackoutView.draw(myGdxGame.batch);
+            recordsTextView.draw(myGdxGame.batch);
+            recordsListView.draw(myGdxGame.batch);
+            homeButton2.draw(myGdxGame.batch);
+
+        }
+        myGdxGame.batch.end();
+
+
+    }
+
+    private void updateTrash() {
+        for (int i = 0; i < trashArray.size(); i++) {
+
+            boolean hasToBeDestroyed = !trashArray.get(i).isAlive() || !trashArray.get(i).isInFrame();
+
+            if (!trashArray.get(i).isAlive()) {
+                myGdxGame.audioManager.explosionSound.play(0.2f);
+            }
+            if (!trashArray.get(i).isAlive()) {
+                gameSession.destructionRegistration();
+                if (myGdxGame.audioManager.isSoundOn) myGdxGame.audioManager.explosionSound.play(0.2f);
+            }
+            if (myGdxGame.audioManager.isSoundOn) myGdxGame.audioManager.explosionSound.play(0.2f);
+            if (hasToBeDestroyed) {
+                myGdxGame.world.destroyBody(trashArray.get(i).body);
+                trashArray.remove(i--);
+            }
+        }
+    }
+
+
 }
