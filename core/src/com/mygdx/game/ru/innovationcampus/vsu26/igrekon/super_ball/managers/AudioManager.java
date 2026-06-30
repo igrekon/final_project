@@ -3,8 +3,9 @@ package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.managers;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameResources;
 
-import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameResources;
+
 
 public class AudioManager {
     public boolean isSoundOn;
@@ -14,11 +15,17 @@ public class AudioManager {
     public Sound shootSound;
     public Sound explosionSound;
 
+    GameResources gameResources;
+
+    MemoryManager memoryManager;
+
+
+
+
     public AudioManager() {
         isMusicOn = true;
         isSoundOn = true;
         backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.BACKGROUND_MUSIC_PATH));
-        shootSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SHOOT_SOUND_PATH));
         explosionSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.DESTROY_SOUND_PATH));
 
         backgroundMusic.setVolume(0.2f);

@@ -2,6 +2,7 @@ package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.components;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameResources;
 
 import jdk.jfr.internal.tool.View;
 

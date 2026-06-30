@@ -1,8 +1,9 @@
 package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.objects;
 
 
-import static ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSettings.SCREEN_HEIGHT;
-import static ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSettings.SCREEN_WIDTH;
+import static com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.SCREEN_HEIGHT;
+import static com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.SCREEN_WIDTH;
+
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -10,7 +11,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.Random;
 
-import ru.innovationcampus.vsu26.igrekon.happy_flappy_bird.characters.Bird;
 
 
 public class StonePillar {
@@ -59,19 +59,19 @@ public class StonePillar {
         }
     }
     public boolean isHit(StonePillar stone){
-        if(ball.y <= gapY - gapHeight / 2 && bird.x + bird.width >= x && bird.x <= x + width){
+        if(ball.y <= gapY - gapHeight / 2 && ball.x + ball.width >= x && ball.x <= x + width){
             return true;
         }
 
-        if (bird.y + bird.height >= gapY + gapHeight / 2 && bird.x + bird.height >= x && bird.x <= x + width ){
+        if (ball.y + ball.height >= gapY + gapHeight / 2 && ball.x + ball.height >= x && ball.x <= x + width ){
             return true;
         }
 
         return false;
 
     }
-    public boolean needAddPoint(Bird bird){
-        return bird.x > x + width && !isPointReceived;
+    public boolean needAddPoint(Ball ball){
+        return ball.x > x + width && !isPointReceived;
     }
     public void  setPointReceived(){
         isPointReceived = true;

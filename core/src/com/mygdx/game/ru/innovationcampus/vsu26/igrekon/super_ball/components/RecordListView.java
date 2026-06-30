@@ -2,12 +2,15 @@ package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.components;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings;
 
 import java.util.ArrayList;
 
-import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSettings;
+
 
 public class RecordListView extends  TextView{
+
+    GameSettings GameSettings;
 
     public RecordListView(BitmapFont font, float y) {
         super(font, 0, y, "");

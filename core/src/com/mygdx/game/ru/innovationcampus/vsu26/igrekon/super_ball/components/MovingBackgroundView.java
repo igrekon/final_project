@@ -2,8 +2,9 @@ package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.components;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings;
 
-import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSettings;
+
 
 public class MovingBackgroundView extends View {
 
@@ -12,6 +13,7 @@ public class MovingBackgroundView extends View {
     int texture1Y;
     int texture2Y;
     int speed = 2;
+    GameSettings GameSettings;
 
     public MovingBackgroundView(String pathToTexture) {
         super(0, 0);

@@ -6,11 +6,14 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings;
+import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.objects.GameObject;
 
-import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSettings;
-import ru.innovationcampus.vsu26.igrekon.space_cleaner.objects.GameObject;
 
 public class ContactManager {
+
+    GameSettings gameSettings;
+    GameObject gameObject;
 
     World world;
 

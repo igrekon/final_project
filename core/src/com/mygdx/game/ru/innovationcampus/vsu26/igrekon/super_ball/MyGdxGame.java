@@ -1,5 +1,9 @@
 package com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball;
 
+import static com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameResources.FONT_PATH;
+import static com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.POSITION_ITERATIONS;
+import static com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.STEP_TIME;
+import static com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.VELOCITY_ITERATIONS;
 import static java.awt.Color.WHITE;
 import static ru.innovationcampus.vsu26.igrekon.super_ball.GameResources.FONT_PATH;
 import static ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings.POSITION_ITERATIONS;
@@ -67,7 +71,7 @@ public class MyGdxGame extends Game {
 		gameScreen = new GameScreen(this);
 		menuScreen = new MenuScreen(this);
 		settingsScreen = new SettingsScreen(this);
-		commonWhiteFont = FontBuilder.generate(24, Color.WHITE, GameResources.FONT_PATH);
+		commonWhiteFont = FontBuilder.generate(24, Color.WHITE, FONT_PATH);
 
 
 		setScreen(menuScreen);

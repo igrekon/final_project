@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.game.ru.innovationcampus.vsu26.igrekon.super_ball.GameSettings;
 
 import ru.innovationcampus.vsu26.igrekon.space_cleaner.GameSettings;
 
@@ -14,13 +15,14 @@ public class Ball extends GameObject {
     long lastShotTime;
     int livesLeft;
 
+    GameSettings gameSettings;
+
     public Ball(int x, int y, int width, int height, String texturePath, World world) {
         super(texturePath, x, y, width, height, GameSettings.SHIP_BIT, world);
         body.setLinearDamping(10);
-        livesLeft=3;
+        livesLeft = 3;
 
     }
-
 
 
     public int getLiveLeft() {
@@ -63,11 +65,13 @@ public class Ball extends GameObject {
         putInFrame();
         super.draw(batch);
     }
+
     @Override
-    public void hit(){
-        livesLeft-=1;
+    public void hit() {
+        livesLeft -= 1;
     }
-    public  boolean isAlive(){
+
+    public boolean isAlive() {
         return livesLeft > 0;
     }
 
